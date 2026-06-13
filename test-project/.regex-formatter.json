@@ -6,21 +6,41 @@
     ],
     "indentSize": 4,
     "continuationIndentSize": 2,
-    "keepBlankLines" : false,
+    "bracesStyle": "sameLine",
+    "breakBraceBlocks": true,
+    "indentOnly": false,
     "forceReformat": true,
+    "keepBlankLines": false,
     "lineBreakOnCharacters": [
       {
         "char": ".",
-        "position": "before"
+        "position": "before",
+        "requireParenthesis": true
       }
     ],
-    "bracesStyle": "sameLine",
     "spaces": {
       "insideParentheses": false,
       "insideBrackets": false,
       "insideBraces": true,
       "beforeParentheses": true
-    }
+    },
+    "commentAndStringRules": {
+      "lineComment": "//",
+      "blockCommentStart": "/*",
+      "blockCommentEnd": "*/",
+      "stringDelimiters": [
+        "\"\"\"",
+        "\"",
+        "'"
+      ]
+    },
+    "customRules": [
+      {
+        "pattern": "System\\.out\\.println",
+        "replace": "System.out.println",
+        "description": "Exemplo de regra regex customizada"
+      }
+    ]
   },
   {
     "fileExtensions": [
@@ -28,18 +48,33 @@
     ],
     "indentSize": 4,
     "continuationIndentSize": 4,
+    "bracesStyle": "sameLine",
+    "breakBraceBlocks": false,
+    "indentOnly": false,
+    "forceReformat": false,
+    "keepBlankLines": true,
     "lineBreakOnCharacters": [
       {
         "char": ".",
-        "position": "after"
+        "position": "after",
+        "requireParenthesis": false
       }
     ],
-    "bracesStyle": "sameLine",
     "spaces": {
       "insideParentheses": false,
       "insideBrackets": false,
       "insideBraces": true,
       "beforeParentheses": false
-    }
+    },
+    "commentAndStringRules": {
+      "lineComment": "//",
+      "blockCommentStart": "/*",
+      "blockCommentEnd": "*/",
+      "stringDelimiters": [
+        "\"",
+        "`"
+      ]
+    },
+    "customRules": []
   }
 ]

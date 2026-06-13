@@ -1,6 +1,7 @@
 export interface LineBreakRule {
   char: string;
   position: 'before' | 'after';
+  requireParenthesis?: boolean;
 }
 
 export interface CustomRegexRule {
@@ -15,6 +16,7 @@ export interface FormatterRuleBlock {
   continuationIndentSize: number;
   lineBreakOnCharacters?: LineBreakRule[];
   bracesStyle?: 'sameLine' | 'newLine';
+  breakBraceBlocks?: boolean;
   spaces?: {
     insideParentheses?: boolean;
     insideBrackets?: boolean;
@@ -50,7 +52,7 @@ export const DEFAULT_CONFIGS: FormatterRuleBlock[] = [
       lineComment: "//",
       blockCommentStart: "/*",
       blockCommentEnd: "*/",
-      stringDelimiters: ["\"", "'"]
+      stringDelimiters: ["\"\"\"", "\"", "'"]
     }
   },
   {
@@ -111,6 +113,7 @@ export function mergeWithDefaults(userBlock: Partial<FormatterRuleBlock>): Forma
     continuationIndentSize: userBlock.continuationIndentSize !== undefined ? userBlock.continuationIndentSize : matchingDefault.continuationIndentSize,
     lineBreakOnCharacters: userBlock.lineBreakOnCharacters !== undefined ? userBlock.lineBreakOnCharacters : matchingDefault.lineBreakOnCharacters,
     bracesStyle: userBlock.bracesStyle !== undefined ? userBlock.bracesStyle : matchingDefault.bracesStyle,
+    breakBraceBlocks: userBlock.breakBraceBlocks !== undefined ? userBlock.breakBraceBlocks : true,
     spaces: {
       ...matchingDefault.spaces,
       ...userBlock.spaces

@@ -29,6 +29,7 @@ Cada bloco de configuração no arquivo `.regex-formatter.json` é um objeto com
 | `indentSize` | `number` | `4` | Número de espaços usados para a indentação padrão de novos blocos/chaves. |
 | `continuationIndentSize` | `number` | `8` | Número de espaços adicionais para linhas que continuam uma instrução da linha anterior (linhas quebradas). |
 | `bracesStyle` | `string` | `"sameLine"` | Controla onde a chave de abertura `{` deve ficar. Valores válidos: `"sameLine"` (mesma linha) ou `"newLine"` (linha de baixo). |
+| `breakBraceBlocks` | `boolean` | `true` | Se `true`, força a quebra de linha de declarações/instruções que estão na mesma linha que chaves `{` ou `}` (ex: `{ public int a;` ou `findOne(); }`). Evita quebrar inicializadores de array (que não possuem `;`). |
 | `indentOnly` | `boolean` | `false` | Se definido como `true`, o formatador apenas ajustará a indentação e os recuos de cada linha, sem alterar onde as linhas quebram. |
 
 ---
@@ -41,6 +42,7 @@ Esta propriedade recebe uma lista de objetos que definem regras para quebrar lin
 | :--- | :--- | :--- |
 | `char` | `string` | O caractere que aciona a quebra de linha (ex: `"."` ou `","`). |
 | `position` | `string` | Onde a quebra de linha deve ser inserida em relação ao caractere: <br>• `"before"`: Quebra a linha *antes* do caractere (ex: `.map(...)` começa na nova linha - comum em Java). <br>• `"after"`: Quebra a linha *depois* do caractere (ex: `.\n` - exigido em Go). |
+| `requireParenthesis` | `boolean` | (Opcional, apenas para caractere `"."`) Se definido como `true` (padrão), o ponto só quebra a linha se for precedido por um parêntese de fechamento `)` (ex: quebra em métodos encadeados, mas não em chamadas estáticas como `System.out`). Se definido como `false`, quebra em qualquer ponto (modo agressivo). |
 
 ---
 

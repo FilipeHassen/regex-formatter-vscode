@@ -5,11 +5,11 @@
       "cs"
     ],
     "indentSize": 4,
-    "continuationIndentSize": 8,
+    "continuationIndentSize": 2,
     "lineBreakOnCharacters": [
       {
-        "char": ".",
-        "position": "before"
+        "char": ").",
+        "position": "after"
       }
     ],
     "bracesStyle": "sameLine",
@@ -17,7 +17,7 @@
       "insideParentheses": false,
       "insideBrackets": false,
       "insideBraces": true,
-      "beforeParentheses": true
+      "beforeParentheses": false
     }
   },
   {

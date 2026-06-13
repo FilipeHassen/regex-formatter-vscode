@@ -177,10 +177,10 @@ function applySpacingRules(text: string, spacesConf: FormatterRuleBlock['spaces'
     const keywords = ['if', 'for', 'while', 'catch', 'switch', 'synchronized'];
     for (const kw of keywords) {
       if (spacesConf.beforeParentheses) {
-        const regex = new RegExp(`\\b(${kw})\\s*\\(`, 'g');
+        const regex = new RegExp(`\\b(${kw})[ \\t]*\\(`, 'g');
         result = result.replace(regex, '$1 (');
       } else {
-        const regex = new RegExp(`\\b(${kw})\\s*\\(`, 'g');
+        const regex = new RegExp(`\\b(${kw})[ \\t]*\\(`, 'g');
         result = result.replace(regex, '$1(');
       }
     }
@@ -190,37 +190,57 @@ function applySpacingRules(text: string, spacesConf: FormatterRuleBlock['spaces'
   if (spacesConf.insideParentheses !== undefined) {
     if (spacesConf.insideParentheses) {
       // (expr) -> ( expr )
-      result = result.replace(/\(\s*(?!\))/g, '( ');
-      result = result.replace(/(?<!\()\s*\)/g, ' )');
+      result = result.replace(/\([ \t]*(?!\r?\n|\))/g, '( ');
+      result = result.replace(/(?<!\r?\n|[ \t]*\()[ \t]*\)/g, ' )');
     } else {
       // ( expr ) -> (expr)
-      result = result.replace(/\(\s+(?!\))/g, '(');
-      result = result.replace(/(?<!\()\s+\)/g, ')');
+      result = result.replace(/\([ \t]+(?!\r?\n|\))/g, '(');
+      result = result.replace(/(?<!\r?\n|[ \t]*\()[ \t]+\)/g, ')');
     }
   }
 
   // 3. spaces.insideBrackets
   if (spacesConf.insideBrackets !== undefined) {
     if (spacesConf.insideBrackets) {
-      result = result.replace(/\[\s*(?!\])/g, '[ ');
-      result = result.replace(/(?<!\[)\s*\]/g, ' ]');
+      result = result.replace(/\[[ \t]*(?!\r?\n|\])/g, '[ ');
+      result = result.replace(/(?<!\r?\n|[ \t]*\[)[ \t]*\]/g, ' ]');
     } else {
-      result = result.replace(/\[\s+(?!\])/g, '[');
-      result = result.replace(/(?<!\[)\s+\]/g, ']');
+      result = result.replace(/\[[ \t]+(?!\r?\n|\])/g, '[');
+      result = result.replace(/(?<!\r?\n|[ \t]*\[)[ \t]+\]/g, ']');
     }
   }
 
   // 4. spaces.insideBraces (only for single line braces, e.g. { val })
   if (spacesConf.insideBraces !== undefined) {
     if (spacesConf.insideBraces) {
-      result = result.replace(/\{\s*(?!\})/g, '{ ');
-      result = result.replace(/(?<!\{)\s*\}/g, ' }');
+      result = result.replace(/\{[ \t]*(?!\r?\n|\})/g, '{ ');
+      result = result.replace(/(?<!\r?\n|[ \t]*\{)[ \t]*\}/g, ' }');
     } else {
-      result = result.replace(/\{\s+(?!\})/g, '{');
-      result = result.replace(/(?<!\{)\s+\}/g, '}');
+      result = result.replace(/\{[ \t]+(?!\r?\n|\})/g, '{');
+      result = result.replace(/(?<!\r?\n|[ \t]*\{)[ \t]+\}/g, '}');
     }
   }
 
+  return result;
+}
+
+/**
+ * Joins any existing spaces or newlines around the rule's character first to make formatting idempotent and independent of input formatting.
+ */
+function joinRuleCharacter(text: string, char: string, requireParenthesis: boolean): string {
+  let result = text;
+  const escapedChar = char.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  if (char === '.' || char === ').') {
+    if (requireParenthesis) {
+      result = result.replace(/\)\s*\.\s*(?=[a-zA-Z_])/g, ').');
+    } else {
+      result = result.replace(/([a-zA-Z0-9_\)])\s*\.\s*(?=[a-zA-Z_])/g, '$1.');
+    }
+  } else {
+    // General case for other characters: join spaces/newlines around them
+    const regex = new RegExp(`\\s*${escapedChar}\\s*`, 'g');
+    result = result.replace(regex, char);
+  }
   return result;
 }
 
@@ -229,6 +249,18 @@ function applySpacingRules(text: string, spacesConf: FormatterRuleBlock['spaces'
  */
 function applyLineBreakRules(text: string, rules: LineBreakRule[]): string {
   let result = text;
+
+  // Join existing broken method chains/characters first so we split them cleanly
+  for (const rule of rules) {
+    if (rule.char) {
+      const reqParen = rule.requireParenthesis !== false || rule.char === ').';
+      result = joinRuleCharacter(result, rule.char, reqParen);
+    }
+  }
+
+  // 2. Clean up any horizontal spaces around dots to ensure correct formatting
+  result = result.replace(/[ \t]*\.[ \t]*/g, '.');
+
   for (const rule of rules) {
     if (!rule.char) {
       continue;
@@ -236,17 +268,26 @@ function applyLineBreakRules(text: string, rules: LineBreakRule[]): string {
     // Escape regex characters
     const escapedChar = rule.char.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
     let regex: RegExp;
-    
-    if (rule.char === '.') {
-      // To avoid breaking float numbers like 3.14, only match dots followed by a word character
-      regex = new RegExp(`\\.(?=[a-zA-Z_])`, 'g');
-    } else {
-      regex = new RegExp(escapedChar, 'g');
-    }
 
     if (rule.position === 'before') {
+      // Match if not preceded by a newline (ignoring horizontal whitespace)
+      const prefix = '(?<!\\r?\\n[ \\t]*)';
+      if (rule.char === '.') {
+        const lookbehind = rule.requireParenthesis !== false ? '(?<=\\)\\s*)' : '';
+        regex = new RegExp(`${prefix}${lookbehind}\\.(?=[a-zA-Z_])`, 'g');
+      } else {
+        regex = new RegExp(`${prefix}${escapedChar}`, 'g');
+      }
       result = result.replace(regex, (match) => `\n${match}`);
     } else {
+      // Match if not followed by a newline (ignoring horizontal whitespace)
+      const suffix = '(?![ \\t]*\\r?\\n)';
+      if (rule.char === '.') {
+        const lookbehind = rule.requireParenthesis !== false ? '(?<=\\)\\s*)' : '';
+        regex = new RegExp(`${lookbehind}\\.(?=[a-zA-Z_])${suffix}`, 'g');
+      } else {
+        regex = new RegExp(`${escapedChar}${suffix}`, 'g');
+      }
       result = result.replace(regex, (match) => `${match}\n`);
     }
   }
@@ -256,16 +297,29 @@ function applyLineBreakRules(text: string, rules: LineBreakRule[]): string {
 /**
  * Adjusts curly braces { placement (same line or new line).
  */
-function applyBracesStyle(text: string, style: 'sameLine' | 'newLine'): string {
+function applyBracesStyle(text: string, style: 'sameLine' | 'newLine', breakBlocks: boolean = true): string {
+  let result = text;
   if (style === 'sameLine') {
     // Replace newline followed by open brace with space + brace
-    return text.replace(/[ \t]*\r?\n[ \t]*\{/g, ' {');
+    result = result.replace(/[ \t]*\r?\n[ \t]*\{/g, ' {');
   } else if (style === 'newLine') {
     // Replace non-whitespace followed by open brace with newline + brace
     // Ensure we capture the preceding character to put back
-    return text.replace(/([^\s])[ \t]*\{/g, '$1\n{');
+    result = result.replace(/([^\s])[ \t]*\{/g, '$1\n{');
   }
-  return text;
+
+  if (breakBlocks) {
+    // Break after '{' if followed by code containing ';' on the same line
+    result = result.replace(/\{([ \t]*)([^;\r\n]*;)/g, '{\n$2');
+    
+    // Break before '}' if preceded by code containing ';' on the same line
+    result = result.replace(/(;[^;\r\n]*?)[ \t]*\}/g, '$1\n}');
+
+    // Break consecutive closing braces onto new lines, e.g. '} }' -> '}\n}'
+    result = result.replace(/\}([ \t]*)\}/g, '}\n}');
+  }
+
+  return result;
 }
 
 /**
@@ -318,7 +372,7 @@ export class RegexFormatter {
           }
           // Apply braces style
           if (this.config.bracesStyle) {
-            t = applyBracesStyle(t, this.config.bracesStyle);
+            t = applyBracesStyle(t, this.config.bracesStyle, this.config.breakBraceBlocks !== false);
           }
           // Apply custom regex rules
           if (this.config.customRules && this.config.customRules.length > 0) {
@@ -385,8 +439,10 @@ export class RegexFormatter {
 
       // Continuation indentation check
       // E.g., if line starts with '.' (for chaining) or if previous line was incomplete
+      // An opening or closing brace starting a line should not receive continuation indentation.
       const startsWithDot = trimmedCode.startsWith('.');
-      if (inContinuation || startsWithDot) {
+      const startsWithBrace = trimmedCode.startsWith('{') || trimmedCode.startsWith('}');
+      if ((inContinuation && !startsWithBrace) || startsWithDot) {
         extraIndent = this.config.continuationIndentSize;
       }
 
@@ -399,7 +455,7 @@ export class RegexFormatter {
         rawLineText.trim().endsWith('+') ||
         rawLineText.trim().endsWith('-') ||
         rawLineText.trim().endsWith('*') ||
-        rawLineText.trim().endsWith('/') ||
+        (rawLineText.trim().endsWith('/') && !rawLineText.trim().endsWith(blockEnd)) ||
         rawLineText.trim().endsWith('&&') ||
         rawLineText.trim().endsWith('||') ||
         (rawLineText.trim().endsWith('.') && !rawLineText.trim().endsWith('..'));
@@ -414,26 +470,41 @@ export class RegexFormatter {
 
       inContinuation = !isLineComplete || endsWithContinuationOp;
 
-      // Apply indentation prefix to the first segment of the line
-      const totalSpaces = baseIndent * this.config.indentSize + extraIndent;
-      const indentStr = ' '.repeat(totalSpaces);
+      // If the line starts with a string segment (e.g. multi-line string continuation) or is a block comment continuation line,
+      // do NOT modify its indentation or whitespace.
+      const firstSeg = lineSegments[0];
+      const isStringContinuation = firstSeg && firstSeg.type === 'string';
+      const isCommentContinuation = 
+        firstSeg && 
+        firstSeg.type === 'comment' && 
+        blockStart && 
+        !firstSeg.text.trimStart().startsWith(blockStart);
 
-      // Strip existing leading whitespace from the line
-      let removedLeadingWhitespace = false;
-      for (let sIdx = 0; sIdx < lineSegments.length; sIdx++) {
-        if (lineSegments[sIdx].text.trim() !== '') {
-          lineSegments[sIdx].text = lineSegments[sIdx].text.trimStart();
-          removedLeadingWhitespace = true;
-          break;
-        } else {
-          lineSegments[sIdx].text = '';
+      if (!isStringContinuation && !isCommentContinuation) {
+        // Strip existing leading whitespace from the line
+        let removedLeadingWhitespace = false;
+        for (let sIdx = 0; sIdx < lineSegments.length; sIdx++) {
+          if (lineSegments[sIdx].text.trim() !== '') {
+            lineSegments[sIdx].text = lineSegments[sIdx].text.trimStart();
+            removedLeadingWhitespace = true;
+            break;
+          } else {
+            lineSegments[sIdx].text = '';
+          }
         }
-      }
 
-      lineSegments[0].text = indentStr + lineSegments[0].text;
+        // Apply indentation prefix to the first segment of the line
+        const totalSpaces = baseIndent * this.config.indentSize + extraIndent;
+        const indentStr = ' '.repeat(totalSpaces);
+        lineSegments[0].text = indentStr + lineSegments[0].text;
+      }
     }
 
     // 4. Reconstruct final code
-    return lines.map(line => line.map(s => s.text).join('')).join('\n');
+    let formatted = lines.map(line => line.map(s => s.text).join('')).join('\n');
+    if (formatted.trim() !== '') {
+      formatted = formatted.trimEnd() + '\n';
+    }
+    return formatted;
   }
 }

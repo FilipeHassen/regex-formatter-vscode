@@ -1,0 +1,43 @@
+[
+  {
+    "fileExtensions": [
+      "java",
+      "cs"
+    ],
+    "indentSize": 4,
+    "continuationIndentSize": 8,
+    "lineBreakOnCharacters": [
+      {
+        "char": ".",
+        "position": "before"
+      }
+    ],
+    "bracesStyle": "sameLine",
+    "spaces": {
+      "insideParentheses": false,
+      "insideBrackets": false,
+      "insideBraces": true,
+      "beforeParentheses": true
+    }
+  },
+  {
+    "fileExtensions": [
+      "go"
+    ],
+    "indentSize": 4,
+    "continuationIndentSize": 4,
+    "lineBreakOnCharacters": [
+      {
+        "char": ".",
+        "position": "after"
+      }
+    ],
+    "bracesStyle": "sameLine",
+    "spaces": {
+      "insideParentheses": false,
+      "insideBrackets": false,
+      "insideBraces": true,
+      "beforeParentheses": false
+    }
+  }
+]

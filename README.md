@@ -1,0 +1,133 @@
+# Regex Formatter
+
+O **Regex Formatter** é um formatador e identador genérico simples e altamente flexível para o VS Code e Antigravity. Ele permite configurar regras de formatação para qualquer linguagem de programação através de um arquivo JSON simples (`.regex-formatter.json` na raiz do seu projeto), dispensando configurações em arquivos XML complexos ou dependências pesadas.
+
+A extensão também vem com configurações padrão pré-definidas (hardcoded) para **Java, C#, Go, JavaScript, TypeScript e JSON**, funcionando imediatamente ao ser instalada.
+
+---
+
+## Como Usar
+
+1. Crie um arquivo chamado `.regex-formatter.json` na pasta raiz do seu projeto.
+2. Defina as regras de formatação em formato de um array JSON contendo blocos de configuração.
+3. Execute o comando de formatação do VS Code (`Shift + Alt + F` no Windows/Linux, `Shift + Option + F` no macOS ou pelo menu de contexto "Format Document").
+
+Você também pode criar um arquivo de configuração inicial rapidamente usando o comando:
+**Regex Formatter: Create Configuration File** através do Command Palette do editor.
+
+---
+
+## Opções de Configuração
+
+Cada bloco de configuração no arquivo `.regex-formatter.json` é um objeto com as seguintes chaves:
+
+### Configuração Geral do Bloco
+
+| Campo | Tipo | Valor Padrão | Descrição |
+| :--- | :--- | :--- | :--- |
+| `fileExtensions` | `string[]` | *Obrigatório* | Lista de extensões de arquivo que este bloco irá formatar (ex: `["java", "cs"]`, `["go"]`). |
+| `indentSize` | `number` | `4` | Número de espaços usados para a indentação padrão de novos blocos/chaves. |
+| `continuationIndentSize` | `number` | `8` | Número de espaços adicionais para linhas que continuam uma instrução da linha anterior (linhas quebradas). |
+| `bracesStyle` | `string` | `"sameLine"` | Controla onde a chave de abertura `{` deve ficar. Valores válidos: `"sameLine"` (mesma linha) ou `"newLine"` (linha de baixo). |
+| `indentOnly` | `boolean` | `false` | Se definido como `true`, o formatador apenas ajustará a indentação e os recuos de cada linha, sem alterar onde as linhas quebram. |
+
+---
+
+### Quebra de Linha Baseada em Caracteres (`lineBreakOnCharacters`)
+
+Esta propriedade recebe uma lista de objetos que definem regras para quebrar linhas automaticamente ao encontrar determinados caracteres (por exemplo, quebrar em chamadas encadeadas de métodos com `.`).
+
+| Subcampo | Tipo | Descrição |
+| :--- | :--- | :--- |
+| `char` | `string` | O caractere que aciona a quebra de linha (ex: `"."` ou `","`). |
+| `position` | `string` | Onde a quebra de linha deve ser inserida em relação ao caractere: <br>• `"before"`: Quebra a linha *antes* do caractere (ex: `.map(...)` começa na nova linha - comum em Java). <br>• `"after"`: Quebra a linha *depois* do caractere (ex: `.\n` - exigido em Go). |
+
+---
+
+### Espaçamento (`spaces`)
+
+Controla a inserção e remoção de espaços em torno de delimitadores.
+
+| Subcampo | Tipo | Valor Padrão | Descrição |
+| :--- | :--- | :--- | :--- |
+| `insideParentheses` | `boolean` | `false` | Adiciona espaço interno em parênteses. `true` -> `( valor )`, `false` -> `(valor)`. |
+| `insideBrackets` | `boolean` | `false` | Adiciona espaço interno em colchetes. `true` -> `[ valor ]`, `false` -> `[valor]`. |
+| `insideBraces` | `boolean` | `true` | Adiciona espaço interno em chaves de linha única. `true` -> `{ valor }`, `false` -> `{valor}`. |
+| `beforeParentheses` | `boolean` | `true` | Adiciona espaço antes de parênteses de controle (ex: `if (x)` vs `if(x)`). *Observação: Chamadas de função normais como `funcao()` não recebem espaço.* |
+
+---
+
+### Proteção de Strings e Comentários (`commentAndStringRules`)
+
+Para evitar que o formatador quebre ou altere o conteúdo de strings e comentários do código, você pode definir como eles são delimitados.
+
+| Subcampo | Tipo | Valor Padrão | Descrição |
+| :--- | :--- | :--- | :--- |
+| `lineComment` | `string` | `//` | Caractere que inicia um comentário de linha única (ex: `//` em Java/JS ou `#` em Python/Bash). |
+| `blockCommentStart` | `string` | `/*` | Caractere que inicia um comentário em bloco. |
+| `blockCommentEnd` | `string` | `*/` | Caractere que finaliza um comentário em bloco. |
+| `stringDelimiters` | `string[]` | `["\"", "'"]` | Lista de delimitadores de strings literais (ex: `"` e `'`, ou ``` ` ``` em JS/Go). |
+
+---
+
+### Regras Personalizadas com Expressões Regulares (`customRules`)
+
+Permite aplicar substituições Regex personalizadas de forma sequencial no código.
+
+| Subcampo | Tipo | Descrição |
+| :--- | :--- | :--- |
+| `pattern` | `string` | A expressão regular de busca (ex: `System\\.out\\.println`). |
+| `replace` | `string` | O texto de substituição (suporta capturas regex como `$1`, `$2`). |
+| `description` | `string` | Uma descrição opcional da regra para documentação ou controle. |
+
+---
+
+## Exemplo de Configuração `.regex-formatter.json`
+
+```json
+[
+  {
+    "fileExtensions": ["java", "cs"],
+    "indentSize": 4,
+    "continuationIndentSize": 8,
+    "lineBreakOnCharacters": [
+      { "char": ".", "position": "before" }
+    ],
+    "bracesStyle": "sameLine",
+    "spaces": {
+      "insideParentheses": false,
+      "insideBrackets": false,
+      "insideBraces": true,
+      "beforeParentheses": true
+    },
+    "customRules": [
+      {
+        "pattern": "System\\.out\\.println",
+        "replace": "System.out.println",
+        "description": "Garante grafia correta do println"
+      }
+    ]
+  },
+  {
+    "fileExtensions": ["go"],
+    "indentSize": 4,
+    "continuationIndentSize": 4,
+    "lineBreakOnCharacters": [
+      { "char": ".", "position": "after" }
+    ],
+    "bracesStyle": "sameLine",
+    "spaces": {
+      "insideParentheses": false,
+      "insideBrackets": false,
+      "insideBraces": true,
+      "beforeParentheses": false
+    },
+    "commentAndStringRules": {
+      "lineComment": "//",
+      "blockCommentStart": "/*",
+      "blockCommentEnd": "*/",
+      "stringDelimiters": ["\"", "`"]
+    }
+  }
+]
+```

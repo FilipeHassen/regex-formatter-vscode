@@ -164,6 +164,64 @@ export function splitSegmentsIntoLines(segments: CodeSegment[]): CodeSegment[][]
 }
 
 /**
+ * Collapses newlines inside pure code segments for statements/expressions
+ * that are not terminated by a block brace or semicolon.
+ */
+function collapseNewlines(text: string, keepBlankLines: boolean = true): string {
+  const lines = text.split('\n');
+  const mergedLines: string[] = [];
+  let currentLine = '';
+
+  for (let j = 0; j < lines.length; j++) {
+    const line = lines[j];
+    const trimmed = line.trim();
+
+    if (trimmed === '') {
+      if (keepBlankLines) {
+        if (currentLine !== '') {
+          const trimmedCurrent = currentLine.trim();
+          const lastChar = trimmedCurrent.slice(-1);
+          const isTerminated = lastChar === ';' || lastChar === '{' || lastChar === '}';
+          if (isTerminated) {
+            mergedLines.push(currentLine);
+            mergedLines.push(line);
+            currentLine = '';
+          }
+        } else {
+          mergedLines.push(line);
+        }
+      }
+      continue;
+    }
+
+    if (currentLine === '') {
+      currentLine = line;
+    } else {
+      const trimmedCurrent = currentLine.trim();
+      const lastChar = trimmedCurrent.slice(-1);
+      const isTerminated = lastChar === ';' || lastChar === '{' || lastChar === '}';
+
+      if (isTerminated) {
+        mergedLines.push(currentLine);
+        currentLine = line;
+      } else {
+        const firstChar = trimmed.charAt(0);
+        const needsSpace = /[a-zA-Z0-9_]/.test(lastChar) && /[a-zA-Z0-9_]/.test(firstChar);
+        if (needsSpace) {
+          currentLine = currentLine.trimEnd() + ' ' + line.trimStart();
+        } else {
+          currentLine = currentLine.trimEnd() + line.trimStart();
+        }
+      }
+    }
+  }
+  if (currentLine !== '') {
+    mergedLines.push(currentLine);
+  }
+  return mergedLines.join('\n');
+}
+
+/**
  * Standardizes spacing inside parentheses, brackets, braces, and control keywords.
  */
 function applySpacingRules(text: string, spacesConf: FormatterRuleBlock['spaces']): string {
@@ -247,13 +305,14 @@ function joinRuleCharacter(text: string, char: string, requireParenthesis: boole
 /**
  * Inserts line breaks before or after configured characters.
  */
-function applyLineBreakRules(text: string, rules: LineBreakRule[]): string {
+function applyLineBreakRules(text: string, rules: LineBreakRule[], forceReformat?: boolean): string {
   let result = text;
 
   // Join existing broken method chains/characters first so we split them cleanly
   for (const rule of rules) {
     if (rule.char) {
-      const reqParen = rule.requireParenthesis !== false || rule.char === ').';
+      // If forceReformat is true, we ignore requireParenthesis in the joining phase to collapse all manual splits.
+      const reqParen = !forceReformat && (rule.requireParenthesis !== false || rule.char === ').');
       result = joinRuleCharacter(result, rule.char, reqParen);
     }
   }
@@ -362,9 +421,13 @@ export class RegexFormatter {
       for (const seg of segments) {
         if (seg.type === 'code') {
           let t = seg.text;
+          // Collapse newlines on non-terminated lines if forceReformat is enabled
+          if (this.config.forceReformat) {
+            t = collapseNewlines(t, this.config.keepBlankLines !== false);
+          }
           // Apply line breaks on characters
           if (this.config.lineBreakOnCharacters && this.config.lineBreakOnCharacters.length > 0) {
-            t = applyLineBreakRules(t, this.config.lineBreakOnCharacters);
+            t = applyLineBreakRules(t, this.config.lineBreakOnCharacters, this.config.forceReformat);
           }
           // Apply spacing rules
           if (this.config.spaces) {
@@ -388,7 +451,13 @@ export class RegexFormatter {
     }
 
     // 3. Line-by-line Indentation
-    const lines = splitSegmentsIntoLines(segments);
+    let lines = splitSegmentsIntoLines(segments);
+    if (this.config.keepBlankLines === false) {
+      lines = lines.filter(lineSegments => {
+        const rawLineText = lineSegments.map(s => s.text).join('');
+        return rawLineText.trim() !== '';
+      });
+    }
     let currentIndentLevel = 0;
     let inContinuation = false;
 

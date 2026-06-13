@@ -6,10 +6,12 @@
     ],
     "indentSize": 4,
     "continuationIndentSize": 2,
+    "keepBlankLines" : false,
+    "forceReformat": true,
     "lineBreakOnCharacters": [
       {
-        "char": ").",
-        "position": "after"
+        "char": ".",
+        "position": "before"
       }
     ],
     "bracesStyle": "sameLine",
@@ -17,7 +19,7 @@
       "insideParentheses": false,
       "insideBrackets": false,
       "insideBraces": true,
-      "beforeParentheses": false
+      "beforeParentheses": true
     }
   },
   {

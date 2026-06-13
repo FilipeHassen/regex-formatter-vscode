@@ -31,6 +31,8 @@ Cada bloco de configuração no arquivo `.regex-formatter.json` é um objeto com
 | `bracesStyle` | `string` | `"sameLine"` | Controla onde a chave de abertura `{` deve ficar. Valores válidos: `"sameLine"` (mesma linha) ou `"newLine"` (linha de baixo). |
 | `breakBraceBlocks` | `boolean` | `true` | Se `true`, força a quebra de linha de declarações/instruções que estão na mesma linha que chaves `{` ou `}` (ex: `{ public int a;` ou `findOne(); }`). Evita quebrar inicializadores de array (que não possuem `;`). |
 | `indentOnly` | `boolean` | `false` | Se definido como `true`, o formatador apenas ajustará a indentação e os recuos de cada linha, sem alterar onde as linhas quebram. |
+| `forceReformat` | `boolean` | `false` | Se `true`, junta e desfaz quaisquer quebras de linha manuais em caracteres de quebra de linha antes de aplicar novamente as quebras conforme as regras ativas, forçando a reformatação completa. |
+| `keepBlankLines` | `boolean` | `true` | Se `true` (padrão), preserva as linhas em branco e espaços vazios entre declarações do código. Se `false`, remove todas as linhas vazias do arquivo. |
 
 ---
 
@@ -92,15 +94,29 @@ Permite aplicar substituições Regex personalizadas de forma sequencial no cód
     "fileExtensions": ["java", "cs"],
     "indentSize": 4,
     "continuationIndentSize": 8,
-    "lineBreakOnCharacters": [
-      { "char": ".", "position": "before" }
-    ],
     "bracesStyle": "sameLine",
+    "breakBraceBlocks": true,
+    "indentOnly": false,
+    "forceReformat": true,
+    "keepBlankLines": true,
+    "lineBreakOnCharacters": [
+      {
+        "char": ".",
+        "position": "before",
+        "requireParenthesis": true
+      }
+    ],
     "spaces": {
       "insideParentheses": false,
       "insideBrackets": false,
       "insideBraces": true,
       "beforeParentheses": true
+    },
+    "commentAndStringRules": {
+      "lineComment": "//",
+      "blockCommentStart": "/*",
+      "blockCommentEnd": "*/",
+      "stringDelimiters": ["\"\"\"", "\"", "'"]
     },
     "customRules": [
       {
@@ -114,10 +130,18 @@ Permite aplicar substituições Regex personalizadas de forma sequencial no cód
     "fileExtensions": ["go"],
     "indentSize": 4,
     "continuationIndentSize": 4,
-    "lineBreakOnCharacters": [
-      { "char": ".", "position": "after" }
-    ],
     "bracesStyle": "sameLine",
+    "breakBraceBlocks": false,
+    "indentOnly": false,
+    "forceReformat": false,
+    "keepBlankLines": true,
+    "lineBreakOnCharacters": [
+      {
+        "char": ".",
+        "position": "after",
+        "requireParenthesis": false
+      }
+    ],
     "spaces": {
       "insideParentheses": false,
       "insideBrackets": false,

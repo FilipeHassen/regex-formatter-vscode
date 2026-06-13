@@ -410,4 +410,75 @@ suite('Formatter Test Suite - Independent Variables', () => {
     assert.strictEqual(merged.spaces?.insideBraces, true);
   });
 
+  // 28. forceReformat - value true
+  test('forceReformat - value true', () => {
+    const code = '        DB.find(\n                )\n                .flgAtivo.eq(1\n                )\n                .findOne();';
+    const config: FormatterRuleBlock = {
+      fileExtensions: ['java'],
+      indentSize: 4,
+      continuationIndentSize: 8,
+      lineBreakOnCharacters: [{ char: '.', position: 'before', requireParenthesis: true }],
+      forceReformat: true,
+      spaces: { insideParentheses: false }
+    };
+    const formatter = new RegexFormatter(config);
+    // Since forceReformat is true, all the manual breaks in parentheses and .eq are collapsed,
+    // and re-split correctly.
+    assert.strictEqual(
+      formatter.format(code),
+      'DB.find()\n        .flgAtivo.eq(1)\n        .findOne();\n'
+    );
+  });
+
+  // 29. forceReformat - value false
+  test('forceReformat - value false', () => {
+    const code = '        DB.find(\n                )\n                .flgAtivo.eq(1\n                )\n                .findOne();';
+    const config: FormatterRuleBlock = {
+      fileExtensions: ['java'],
+      indentSize: 4,
+      continuationIndentSize: 8,
+      lineBreakOnCharacters: [{ char: '.', position: 'before', requireParenthesis: true }],
+      forceReformat: false,
+      spaces: { insideParentheses: false }
+    };
+    const formatter = new RegexFormatter(config);
+    // Since forceReformat is false (default), the manual breaks inside parentheses are preserved.
+    assert.strictEqual(
+      formatter.format(code),
+      'DB.find(\n        )\n        .flgAtivo.eq(1\n        )\n        .findOne();\n'
+    );
+  });
+
+  // 30. keepBlankLines - value true
+  test('keepBlankLines - value true', () => {
+    const code = 'class Test {\n\n    int a = 1;\n\n}';
+    const config: FormatterRuleBlock = {
+      fileExtensions: ['java'],
+      indentSize: 4,
+      continuationIndentSize: 8,
+      keepBlankLines: true
+    };
+    const formatter = new RegexFormatter(config);
+    assert.strictEqual(
+      formatter.format(code),
+      'class Test {\n\n    int a = 1;\n\n}\n'
+    );
+  });
+
+  // 31. keepBlankLines - value false
+  test('keepBlankLines - value false', () => {
+    const code = 'class Test {\n\n    int a = 1;\n\n}';
+    const config: FormatterRuleBlock = {
+      fileExtensions: ['java'],
+      indentSize: 4,
+      continuationIndentSize: 8,
+      keepBlankLines: false
+    };
+    const formatter = new RegexFormatter(config);
+    assert.strictEqual(
+      formatter.format(code),
+      'class Test {\n    int a = 1;\n}\n'
+    );
+  });
+
 });

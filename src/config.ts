@@ -17,6 +17,8 @@ export interface FormatterRuleBlock {
   lineBreakOnCharacters?: LineBreakRule[];
   bracesStyle?: 'sameLine' | 'newLine';
   breakBraceBlocks?: boolean;
+  forceReformat?: boolean;
+  keepBlankLines?: boolean;
   spaces?: {
     insideParentheses?: boolean;
     insideBrackets?: boolean;
@@ -119,6 +121,8 @@ export function mergeWithDefaults(userBlock: Partial<FormatterRuleBlock>): Forma
       ...userBlock.spaces
     },
     indentOnly: userBlock.indentOnly !== undefined ? userBlock.indentOnly : matchingDefault.indentOnly,
+    forceReformat: userBlock.forceReformat !== undefined ? userBlock.forceReformat : matchingDefault.forceReformat,
+    keepBlankLines: userBlock.keepBlankLines !== undefined ? userBlock.keepBlankLines : true,
     commentAndStringRules: {
       ...matchingDefault.commentAndStringRules,
       ...userBlock.commentAndStringRules

@@ -89,38 +89,66 @@ export function activate(context: vscode.ExtensionContext) {
         "fileExtensions": ["java", "cs"],
         "indentSize": 4,
         "continuationIndentSize": 8,
-        "lineBreakOnCharacters": [
-          { "char": ".", "position": "before" }
-        ],
         "bracesStyle": "sameLine",
+        "breakBraceBlocks": true,
+        "indentOnly": false,
+        "forceReformat": false,
+        "keepBlankLines": true,
+        "lineBreakOnCharacters": [
+          { "char": ".", "position": "before", "requireParenthesis": true }
+        ],
         "spaces": {
           "insideParentheses": false,
           "insideBrackets": false,
           "insideBraces": true,
           "beforeParentheses": true
-        }
+        },
+        "commentAndStringRules": {
+          "lineComment": "//",
+          "blockCommentStart": "/*",
+          "blockCommentEnd": "*/",
+          "stringDelimiters": ["\"\"\"", "\"", "'"]
+        },
+        "customRules": [
+          {
+            "pattern": "System\\.out\\.println",
+            "replace": "System.out.println",
+            "description": "Exemplo de regra regex customizada"
+          }
+        ]
       },
       {
         "fileExtensions": ["go"],
         "indentSize": 4,
         "continuationIndentSize": 4,
-        "lineBreakOnCharacters": [
-          { "char": ".", "position": "after" }
-        ],
         "bracesStyle": "sameLine",
+        "breakBraceBlocks": false,
+        "indentOnly": false,
+        "forceReformat": false,
+        "keepBlankLines": true,
+        "lineBreakOnCharacters": [
+          { "char": ".", "position": "after", "requireParenthesis": false }
+        ],
         "spaces": {
           "insideParentheses": false,
           "insideBrackets": false,
           "insideBraces": true,
           "beforeParentheses": false
-        }
+        },
+        "commentAndStringRules": {
+          "lineComment": "//",
+          "blockCommentStart": "/*",
+          "blockCommentEnd": "*/",
+          "stringDelimiters": ["\"", "`"]
+        },
+        "customRules": []
       }
     ];
 
     try {
       fs.writeFileSync(configPath, JSON.stringify(template, null, 2), 'utf8');
       vscode.window.showInformationMessage('Arquivo .regex-formatter.json criado com sucesso!');
-      
+
       const doc = await vscode.workspace.openTextDocument(vscode.Uri.file(configPath));
       await vscode.window.showTextDocument(doc);
     } catch (err: any) {
@@ -166,4 +194,4 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(createConfigDisposable, formattingProviderDisposable);
 }
 
-export function deactivate() {}
+export function deactivate() { }

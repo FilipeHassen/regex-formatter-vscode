@@ -6,6 +6,80 @@ A extensão também vem com configurações padrão pré-definidas (hardcoded) p
 
 ---
 
+## Desenvolvimento
+
+### Pré-requisitos
+
+- **Linux** com `curl` e `bash`
+- [VS Code](https://code.visualstudio.com/) ou [Antigravity](https://antigravity.dev/) (para depurar/executar a extensão)
+
+> O comando `make install` já cuida de instalar o [nvm](https://github.com/nvm-sh/nvm), o [Node.js](https://nodejs.org/) v20 e as dependências do npm automaticamente.
+
+### Instalando dependências
+
+```bash
+make install
+```
+
+Esse comando irá:
+1. Instalar o **nvm** (se ainda não estiver instalado)
+2. Instalar e ativar o **Node.js v20** via nvm
+3. Executar `npm install` para baixar as dependências do projeto
+
+### Compilando o projeto
+
+O projeto é escrito em TypeScript e precisa ser compilado para JavaScript antes de ser executado.
+
+```bash
+make compile
+```
+
+Para compilar automaticamente a cada alteração de arquivo (modo watch):
+
+```bash
+make watch
+```
+
+### Executando / Depurando
+
+**Via Makefile** — abre uma nova janela do VS Code/Antigravity com a extensão carregada em modo de desenvolvimento sobre a pasta `test-project`:
+
+```bash
+make debug
+```
+
+> Para usar outro editor compatível (ex: Cursor), sobrescreva a variável `VSCODE_BIN`:
+> ```bash
+> make debug VSCODE_BIN=cursor
+> ```
+
+**Via VS Code/Antigravity** — pressione `F5` (ou use o menu *Run > Start Debugging*). O launch configuration `Run Extension` já está configurado em `.vscode/launch.json`.
+
+### Lint e Testes
+
+```bash
+make lint    # Executa o ESLint
+make test    # Executa os testes unitários
+```
+
+### Empacotando como `.vsix`
+
+Para gerar o pacote instalável da extensão (`.vsix`):
+
+```bash
+make package
+```
+
+### Limpeza
+
+Remove os arquivos JS compilados da pasta `out/`:
+
+```bash
+make clean
+```
+
+---
+
 ## Como Usar
 
 1. Crie um arquivo chamado `.regex-formatter.json` na pasta raiz do seu projeto.

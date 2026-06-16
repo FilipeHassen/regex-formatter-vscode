@@ -2,6 +2,8 @@ export interface LineBreakRule {
   char: string;
   position: 'before' | 'after';
   requireParenthesis?: boolean;
+  beforePattern?: string;
+  afterPattern?: string;
 }
 
 export interface CustomRegexRule {
@@ -33,6 +35,7 @@ export interface FormatterRuleBlock {
     stringDelimiters?: string[];
   };
   customRules?: CustomRegexRule[];
+  completeLinePatterns?: string[];
 }
 
 export const DEFAULT_CONFIGS: FormatterRuleBlock[] = [
@@ -55,7 +58,10 @@ export const DEFAULT_CONFIGS: FormatterRuleBlock[] = [
       blockCommentStart: "/*",
       blockCommentEnd: "*/",
       stringDelimiters: ["\"\"\"", "\"", "'"]
-    }
+    },
+    completeLinePatterns: [
+      "^\\s*@"
+    ]
   },
   {
     fileExtensions: ["go"],
@@ -76,7 +82,8 @@ export const DEFAULT_CONFIGS: FormatterRuleBlock[] = [
       blockCommentStart: "/*",
       blockCommentEnd: "*/",
       stringDelimiters: ["\"", "`"]
-    }
+    },
+    completeLinePatterns: []
   },
   {
     fileExtensions: ["js", "ts", "jsx", "tsx", "json"],
@@ -97,7 +104,10 @@ export const DEFAULT_CONFIGS: FormatterRuleBlock[] = [
       blockCommentStart: "/*",
       blockCommentEnd: "*/",
       stringDelimiters: ["\"", "'", "`"]
-    }
+    },
+    completeLinePatterns: [
+      "^\\s*@"
+    ]
   }
 ];
 
@@ -127,6 +137,7 @@ export function mergeWithDefaults(userBlock: Partial<FormatterRuleBlock>): Forma
       ...matchingDefault.commentAndStringRules,
       ...userBlock.commentAndStringRules
     },
-    customRules: userBlock.customRules !== undefined ? userBlock.customRules : matchingDefault.customRules
+    customRules: userBlock.customRules !== undefined ? userBlock.customRules : matchingDefault.customRules,
+    completeLinePatterns: userBlock.completeLinePatterns !== undefined ? userBlock.completeLinePatterns : matchingDefault.completeLinePatterns
   };
 }

@@ -481,4 +481,69 @@ suite('Formatter Test Suite - Independent Variables', () => {
     );
   });
 
+  // 32. lineBreakOnCharacters - beforePattern
+  test('lineBreakOnCharacters - beforePattern', () => {
+    const code = 'myBuilder.select().where().execute();';
+    const config: FormatterRuleBlock = {
+      fileExtensions: ['java'],
+      indentSize: 4,
+      continuationIndentSize: 4,
+      lineBreakOnCharacters: [{ char: '.', position: 'before', beforePattern: '(?:select|where|execute)\\(\\)' }]
+    };
+    const formatter = new RegexFormatter(config);
+    assert.strictEqual(
+      formatter.format(code),
+      'myBuilder.select()\n    .where()\n    .execute();\n'
+    );
+  });
+
+  // 33. lineBreakOnCharacters - beforePattern and afterPattern
+  test('lineBreakOnCharacters - beforePattern and afterPattern', () => {
+    const code = 'a+b;';
+    const config: FormatterRuleBlock = {
+      fileExtensions: ['java'],
+      indentSize: 4,
+      continuationIndentSize: 4,
+      lineBreakOnCharacters: [{ char: '+', position: 'before', beforePattern: '[a-z]', afterPattern: '[a-z]' }]
+    };
+    const formatter = new RegexFormatter(config);
+    assert.strictEqual(
+      formatter.format(code),
+      'a\n    +b;\n'
+    );
+  });
+
+  // 34. completeLinePatterns - java annotations indent
+  test('completeLinePatterns - java annotations indent', () => {
+    const code = '@MyAnnotation\npublic class Test {\n@Another\nprivate String name;\n}';
+    const config: FormatterRuleBlock = {
+      fileExtensions: ['java'],
+      indentSize: 4,
+      continuationIndentSize: 8,
+      completeLinePatterns: ['^\\s*@']
+    };
+    const formatter = new RegexFormatter(config);
+    assert.strictEqual(
+      formatter.format(code),
+      '@MyAnnotation\npublic class Test {\n    @Another\n    private String name;\n}\n'
+    );
+  });
+
+  // 35. completeLinePatterns - java annotations with forceReformat
+  test('completeLinePatterns - java annotations with forceReformat', () => {
+    const code = '@MyAnnotation\npublic class Test {\n    @Another\n    private String name;\n}';
+    const config: FormatterRuleBlock = {
+      fileExtensions: ['java'],
+      indentSize: 4,
+      continuationIndentSize: 8,
+      completeLinePatterns: ['^\\s*@'],
+      forceReformat: true
+    };
+    const formatter = new RegexFormatter(config);
+    assert.strictEqual(
+      formatter.format(code),
+      '@MyAnnotation\npublic class Test {\n    @Another\n    private String name;\n}\n'
+    );
+  });
+
 });

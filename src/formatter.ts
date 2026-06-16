@@ -167,7 +167,11 @@ export function splitSegmentsIntoLines(segments: CodeSegment[]): CodeSegment[][]
  * Collapses newlines inside pure code segments for statements/expressions
  * that are not terminated by a block brace or semicolon.
  */
-function collapseNewlines(text: string, keepBlankLines: boolean = true): string {
+function collapseNewlines(
+  text: string,
+  keepBlankLines: boolean = true,
+  completeLinePatterns?: string[]
+): string {
   const lines = text.split('\n');
   const mergedLines: string[] = [];
   let currentLine = '';
@@ -181,7 +185,17 @@ function collapseNewlines(text: string, keepBlankLines: boolean = true): string 
         if (currentLine !== '') {
           const trimmedCurrent = currentLine.trim();
           const lastChar = trimmedCurrent.slice(-1);
-          const isTerminated = lastChar === ';' || lastChar === '{' || lastChar === '}';
+          
+          const isCompleteLinePattern = completeLinePatterns && completeLinePatterns.some(pattern => {
+            try {
+              const regex = new RegExp(pattern);
+              return regex.test(trimmedCurrent);
+            } catch {
+              return false;
+            }
+          });
+
+          const isTerminated = lastChar === ';' || lastChar === '{' || lastChar === '}' || isCompleteLinePattern;
           if (isTerminated) {
             mergedLines.push(currentLine);
             mergedLines.push(line);
@@ -199,7 +213,26 @@ function collapseNewlines(text: string, keepBlankLines: boolean = true): string 
     } else {
       const trimmedCurrent = currentLine.trim();
       const lastChar = trimmedCurrent.slice(-1);
-      const isTerminated = lastChar === ';' || lastChar === '{' || lastChar === '}';
+      
+      const isCompleteLinePattern = completeLinePatterns && completeLinePatterns.some(pattern => {
+        try {
+          const regex = new RegExp(pattern);
+          return regex.test(trimmedCurrent);
+        } catch {
+          return false;
+        }
+      });
+
+      const isNextLineCompletePattern = completeLinePatterns && completeLinePatterns.some(pattern => {
+        try {
+          const regex = new RegExp(pattern);
+          return regex.test(trimmed);
+        } catch {
+          return false;
+        }
+      });
+
+      const isTerminated = lastChar === ';' || lastChar === '{' || lastChar === '}' || isCompleteLinePattern || isNextLineCompletePattern;
 
       if (isTerminated) {
         mergedLines.push(currentLine);
@@ -285,10 +318,26 @@ function applySpacingRules(text: string, spacesConf: FormatterRuleBlock['spaces'
 /**
  * Joins any existing spaces or newlines around the rule's character first to make formatting idempotent and independent of input formatting.
  */
-function joinRuleCharacter(text: string, char: string, requireParenthesis: boolean): string {
+function joinRuleCharacter(
+  text: string,
+  char: string,
+  requireParenthesis: boolean,
+  beforePattern?: string,
+  afterPattern?: string
+): string {
   let result = text;
   const escapedChar = char.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-  if (char === '.' || char === ').') {
+
+  if (beforePattern && afterPattern) {
+    const regex = new RegExp(`(${beforePattern})\\s*${escapedChar}\\s*(${afterPattern})`, 'g');
+    result = result.replace(regex, `$1${char}$2`);
+  } else if (beforePattern) {
+    const regex = new RegExp(`(${beforePattern})\\s*${escapedChar}\\s*`, 'g');
+    result = result.replace(regex, `$1${char}`);
+  } else if (afterPattern) {
+    const regex = new RegExp(`\\s*${escapedChar}\\s*(${afterPattern})`, 'g');
+    result = result.replace(regex, `${char}$1`);
+  } else if (char === '.' || char === ').') {
     if (requireParenthesis) {
       result = result.replace(/\)\s*\.\s*(?=[a-zA-Z_])/g, ').');
     } else {
@@ -313,7 +362,7 @@ function applyLineBreakRules(text: string, rules: LineBreakRule[], forceReformat
     if (rule.char) {
       // If forceReformat is true, we ignore requireParenthesis in the joining phase to collapse all manual splits.
       const reqParen = !forceReformat && (rule.requireParenthesis !== false || rule.char === ').');
-      result = joinRuleCharacter(result, rule.char, reqParen);
+      result = joinRuleCharacter(result, rule.char, reqParen, rule.beforePattern, rule.afterPattern);
     }
   }
 
@@ -331,22 +380,36 @@ function applyLineBreakRules(text: string, rules: LineBreakRule[], forceReformat
     if (rule.position === 'before') {
       // Match if not preceded by a newline (ignoring horizontal whitespace)
       const prefix = '(?<!\\r?\\n[ \\t]*)';
-      if (rule.char === '.') {
-        const lookbehind = rule.requireParenthesis !== false ? '(?<=\\)\\s*)' : '';
-        regex = new RegExp(`${prefix}${lookbehind}\\.(?=[a-zA-Z_])`, 'g');
-      } else {
-        regex = new RegExp(`${prefix}${escapedChar}`, 'g');
+      let lookbehind = '';
+      if (rule.beforePattern) {
+        lookbehind = `(?<=${rule.beforePattern})`;
+      } else if (rule.char === '.') {
+        lookbehind = rule.requireParenthesis !== false ? '(?<=\\)\\s*)' : '';
       }
+
+      let lookahead = '';
+      if (rule.afterPattern) {
+        lookahead = `(?=${rule.afterPattern})`;
+      } else if (rule.char === '.') {
+        lookahead = '(?=[a-zA-Z_])';
+      }
+
+      regex = new RegExp(`${prefix}${lookbehind}${escapedChar}${lookahead}`, 'g');
       result = result.replace(regex, (match) => `\n${match}`);
     } else {
       // Match if not followed by a newline (ignoring horizontal whitespace)
       const suffix = '(?![ \\t]*\\r?\\n)';
-      if (rule.char === '.') {
-        const lookbehind = rule.requireParenthesis !== false ? '(?<=\\)\\s*)' : '';
-        regex = new RegExp(`${lookbehind}\\.(?=[a-zA-Z_])${suffix}`, 'g');
-      } else {
-        regex = new RegExp(`${escapedChar}${suffix}`, 'g');
+      let lookbehind = '';
+      if (rule.beforePattern) {
+        lookbehind = `(?<=${rule.beforePattern})`;
       }
+
+      let lookahead = '';
+      if (rule.afterPattern) {
+        lookahead = `(?=${rule.afterPattern})`;
+      }
+
+      regex = new RegExp(`${lookbehind}${escapedChar}${lookahead}${suffix}`, 'g');
       result = result.replace(regex, (match) => `${match}\n`);
     }
   }
@@ -423,7 +486,7 @@ export class RegexFormatter {
           let t = seg.text;
           // Collapse newlines on non-terminated lines if forceReformat is enabled
           if (this.config.forceReformat) {
-            t = collapseNewlines(t, this.config.keepBlankLines !== false);
+            t = collapseNewlines(t, this.config.keepBlankLines !== false, this.config.completeLinePatterns);
           }
           // Apply line breaks on characters
           if (this.config.lineBreakOnCharacters && this.config.lineBreakOnCharacters.length > 0) {
@@ -529,13 +592,24 @@ export class RegexFormatter {
         rawLineText.trim().endsWith('||') ||
         (rawLineText.trim().endsWith('.') && !rawLineText.trim().endsWith('..'));
 
+      const trimmedLine = rawLineText.trim();
+      const isCompleteLinePattern = this.config.completeLinePatterns && this.config.completeLinePatterns.some(pattern => {
+        try {
+          const regex = new RegExp(pattern);
+          return regex.test(trimmedLine);
+        } catch {
+          return false;
+        }
+      });
+
       const isLineComplete = 
-        rawLineText.trim().endsWith(';') ||
-        rawLineText.trim().endsWith('{') ||
-        rawLineText.trim().endsWith('}') ||
-        rawLineText.trim().startsWith(lineComment) ||
-        rawLineText.trim().startsWith(blockStart) ||
-        rawLineText.trim().endsWith(blockEnd);
+        trimmedLine.endsWith(';') ||
+        trimmedLine.endsWith('{') ||
+        trimmedLine.endsWith('}') ||
+        trimmedLine.startsWith(lineComment) ||
+        trimmedLine.startsWith(blockStart) ||
+        trimmedLine.endsWith(blockEnd) ||
+        isCompleteLinePattern;
 
       inContinuation = !isLineComplete || endsWithContinuationOp;
 

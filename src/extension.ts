@@ -95,7 +95,13 @@ export function activate(context: vscode.ExtensionContext) {
         "forceReformat": false,
         "keepBlankLines": true,
         "lineBreakOnCharacters": [
-          { "char": ".", "position": "before", "requireParenthesis": true }
+          { 
+            "char": ".", 
+            "position": "before", 
+            "requireParenthesis": true,
+            "beforePattern": "",
+            "afterPattern": ""
+          }
         ],
         "spaces": {
           "insideParentheses": false,
@@ -115,6 +121,9 @@ export function activate(context: vscode.ExtensionContext) {
             "replace": "System.out.println",
             "description": "Exemplo de regra regex customizada"
           }
+        ],
+        "completeLinePatterns": [
+          "^\\s*@"
         ]
       },
       {
@@ -127,7 +136,13 @@ export function activate(context: vscode.ExtensionContext) {
         "forceReformat": false,
         "keepBlankLines": true,
         "lineBreakOnCharacters": [
-          { "char": ".", "position": "after", "requireParenthesis": false }
+          { 
+            "char": ".", 
+            "position": "after", 
+            "requireParenthesis": false,
+            "beforePattern": "",
+            "afterPattern": ""
+          }
         ],
         "spaces": {
           "insideParentheses": false,
@@ -141,7 +156,8 @@ export function activate(context: vscode.ExtensionContext) {
           "blockCommentEnd": "*/",
           "stringDelimiters": ["\"", "`"]
         },
-        "customRules": []
+        "customRules": [],
+        "completeLinePatterns": []
       }
     ];
 

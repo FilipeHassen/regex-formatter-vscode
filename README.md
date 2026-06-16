@@ -6,6 +6,19 @@ A extensão também vem com configurações padrão pré-definidas (hardcoded) p
 
 ---
 
+## Como Começar
+
+1. **Instale a extensão** no seu editor (VS Code ou Antigravity).
+2. **Abra a pasta do seu projeto/workspace**.
+3. **Crie o arquivo de configuração**:
+   - Abra o Command Palette com o atalho `Ctrl + Shift + P` (ou `Cmd + Shift + P` no macOS).
+   - Digite `Regex Formatter: Create Configuration File` e pressione `Enter`.
+   - Um arquivo `.regex-formatter.json` com configurações de exemplo completas será criado automaticamente na raiz do seu workspace.
+4. **Formate seu código**:
+   - Abra qualquer arquivo suportado e use o atalho padrão de formatação (`Shift + Alt + F` no Windows/Linux, `Shift + Option + F` no macOS) ou clique com o botão direito e selecione **Format Document**.
+
+---
+
 ## Desenvolvimento
 
 ### Pré-requisitos
@@ -107,6 +120,7 @@ Cada bloco de configuração no arquivo `.regex-formatter.json` é um objeto com
 | `indentOnly` | `boolean` | `false` | Se definido como `true`, o formatador apenas ajustará a indentação e os recuos de cada linha, sem alterar onde as linhas quebram. |
 | `forceReformat` | `boolean` | `false` | Se `true`, junta e desfaz quaisquer quebras de linha manuais em caracteres de quebra de linha antes de aplicar novamente as quebras conforme as regras ativas, forçando a reformatação completa. |
 | `keepBlankLines` | `boolean` | `true` | Se `true` (padrão), preserva as linhas em branco e espaços vazios entre declarações do código. Se `false`, remove todas as linhas vazias do arquivo. |
+| `completeLinePatterns` | `string[]` | `[]` | Lista de expressões regulares que identificam linhas que devem ser tratadas como "completas". Útil para que anotações/decorators (ex: `["^\\s*@"]` para Java/TS) não provoquem recuos de continuação indesejados ou se colapsem com a próxima linha. |
 
 ---
 
@@ -119,6 +133,8 @@ Esta propriedade recebe uma lista de objetos que definem regras para quebrar lin
 | `char` | `string` | O caractere que aciona a quebra de linha (ex: `"."` ou `","`). |
 | `position` | `string` | Onde a quebra de linha deve ser inserida em relação ao caractere: <br>• `"before"`: Quebra a linha *antes* do caractere (ex: `.map(...)` começa na nova linha - comum em Java). <br>• `"after"`: Quebra a linha *depois* do caractere (ex: `.\n` - exigido em Go). |
 | `requireParenthesis` | `boolean` | (Opcional, apenas para caractere `"."`) Se definido como `true` (padrão), o ponto só quebra a linha se for precedido por um parêntese de fechamento `)` (ex: quebra em métodos encadeados, mas não em chamadas estáticas como `System.out`). Se definido como `false`, quebra em qualquer ponto (modo agressivo). |
+| `beforePattern` | `string` | (Opcional) Expressão regular que deve coincidir imediatamente antes do caractere configurado para que a quebra ocorra (ex: `(?:select|where|execute)\\(\\)`). |
+| `afterPattern` | `string` | (Opcional) Expressão regular que deve coincidir imediatamente após o caractere configurado para que a quebra ocorra. |
 
 ---
 
@@ -177,7 +193,9 @@ Permite aplicar substituições Regex personalizadas de forma sequencial no cód
       {
         "char": ".",
         "position": "before",
-        "requireParenthesis": true
+        "requireParenthesis": true,
+        "beforePattern": "",
+        "afterPattern": ""
       }
     ],
     "spaces": {
@@ -198,6 +216,9 @@ Permite aplicar substituições Regex personalizadas de forma sequencial no cód
         "replace": "System.out.println",
         "description": "Garante grafia correta do println"
       }
+    ],
+    "completeLinePatterns": [
+      "^\\s*@"
     ]
   },
   {
@@ -213,7 +234,9 @@ Permite aplicar substituições Regex personalizadas de forma sequencial no cód
       {
         "char": ".",
         "position": "after",
-        "requireParenthesis": false
+        "requireParenthesis": false,
+        "beforePattern": "",
+        "afterPattern": ""
       }
     ],
     "spaces": {
@@ -227,7 +250,8 @@ Permite aplicar substituições Regex personalizadas de forma sequencial no cód
       "blockCommentStart": "/*",
       "blockCommentEnd": "*/",
       "stringDelimiters": ["\"", "`"]
-    }
+    },
+    "completeLinePatterns": []
   }
 ]
 ```

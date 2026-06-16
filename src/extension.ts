@@ -158,6 +158,39 @@ export function activate(context: vscode.ExtensionContext) {
         },
         "customRules": [],
         "completeLinePatterns": []
+      },
+      {
+        "fileExtensions": ["json"],
+        "indentSize": 4,
+        "continuationIndentSize": 0,
+        "bracesStyle": "sameLine",
+        "breakBraceBlocks": true,
+        "indentOnly": false,
+        "forceReformat": true,
+        "keepBlankLines": true,
+        "lineBreakOnCharacters": [
+          {
+            "char": ",",
+            "position": "after",
+            "requireParenthesis": false,
+            "beforePattern": "",
+            "afterPattern": ""
+          }
+        ],
+        "spaces": {
+          "insideParentheses": false,
+          "insideBrackets": false,
+          "insideBraces": true,
+          "beforeParentheses": false
+        },
+        "commentAndStringRules": {
+          "lineComment": "",
+          "blockCommentStart": "",
+          "blockCommentEnd": "",
+          "stringDelimiters": ["\""]
+        },
+        "customRules": [],
+        "completeLinePatterns": []
       }
     ];
 

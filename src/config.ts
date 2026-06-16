@@ -86,7 +86,7 @@ export const DEFAULT_CONFIGS: FormatterRuleBlock[] = [
     completeLinePatterns: []
   },
   {
-    fileExtensions: ["js", "ts", "jsx", "tsx", "json"],
+    fileExtensions: ["js", "ts", "jsx", "tsx"],
     indentSize: 2,
     continuationIndentSize: 4,
     lineBreakOnCharacters: [
@@ -108,6 +108,28 @@ export const DEFAULT_CONFIGS: FormatterRuleBlock[] = [
     completeLinePatterns: [
       "^\\s*@"
     ]
+  },
+  {
+    fileExtensions: ["json"],
+    indentSize: 4,
+    continuationIndentSize: 0,
+    lineBreakOnCharacters: [
+      { char: ",", position: "after" }
+    ],
+    bracesStyle: "sameLine",
+    spaces: {
+      insideParentheses: false,
+      insideBrackets: false,
+      insideBraces: true,
+      beforeParentheses: false
+    },
+    commentAndStringRules: {
+      lineComment: "",
+      blockCommentStart: "",
+      blockCommentEnd: "",
+      stringDelimiters: ["\""]
+    },
+    completeLinePatterns: []
   }
 ];
 

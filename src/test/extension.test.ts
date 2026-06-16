@@ -546,4 +546,23 @@ suite('Formatter Test Suite - Independent Variables', () => {
     );
   });
 
+  // 36. json formatting alignment
+  test('json formatting alignment', () => {
+    const code = '{\n"name": "regex-formatter",\n"version": "0.0.1",\n"dependencies": {\n"vscode": "^1.74.0"\n}\n}';
+    const config: FormatterRuleBlock = {
+      fileExtensions: ['json'],
+      indentSize: 4,
+      continuationIndentSize: 0,
+      bracesStyle: 'sameLine',
+      breakBraceBlocks: true,
+      lineBreakOnCharacters: [{ char: ',', position: 'after' }],
+      spaces: { insideBraces: true }
+    };
+    const formatter = new RegexFormatter(config);
+    assert.strictEqual(
+      formatter.format(code),
+      '{\n    "name": "regex-formatter",\n    "version": "0.0.1",\n    "dependencies": {\n        "vscode": "^1.74.0"\n    }\n}\n'
+    );
+  });
+
 });

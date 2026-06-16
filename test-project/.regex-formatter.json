@@ -1,50 +1,44 @@
-[
-  {
-    "fileExtensions": [
-      "java",
-      "cs"
+[{
+    "fileExtensions": ["java",
+    "cs"
     ],
     "indentSize": 4,
-    "continuationIndentSize": 2,
+    "continuationIndentSize": 8,
     "bracesStyle": "sameLine",
     "breakBraceBlocks": true,
     "indentOnly": false,
-    "forceReformat": true,
-    "keepBlankLines": false,
-    "lineBreakOnCharacters": [
-      {
+    "forceReformat": false,
+    "keepBlankLines": true,
+    "lineBreakOnCharacters": [{
         "char": ".",
         "position": "before",
-        "requireParenthesis": true
-      }
+        "requireParenthesis": true,
+        "beforePattern": "",
+        "afterPattern": ""
+    }
     ],
     "spaces": {
-      "insideParentheses": false,
-      "insideBrackets": false,
-      "insideBraces": true,
-      "beforeParentheses": true
-    },
+        "insideParentheses": false,
+        "insideBrackets": false,
+        "insideBraces": true,
+        "beforeParentheses": true },
     "commentAndStringRules": {
-      "lineComment": "//",
-      "blockCommentStart": "/*",
-      "blockCommentEnd": "*/",
-      "stringDelimiters": [
-        "\"\"\"",
+        "lineComment": "//",
+        "blockCommentStart": "/*",
+        "blockCommentEnd": "*/",
+        "stringDelimiters": ["\"\"\"",
         "\"",
         "'"
-      ]
-    },
-    "customRules": [
-      {
+        ] },
+    "customRules": [{
         "pattern": "System\\.out\\.println",
         "replace": "System.out.println",
         "description": "Exemplo de regra regex customizada"
-      }
-    ]
-  },
-  {
-    "fileExtensions": [
-      "go"
+    }
+    ],
+    "completeLinePatterns": ["^\\s*@"
+    ] }, {
+    "fileExtensions": ["go"
     ],
     "indentSize": 4,
     "continuationIndentSize": 4,
@@ -53,28 +47,56 @@
     "indentOnly": false,
     "forceReformat": false,
     "keepBlankLines": true,
-    "lineBreakOnCharacters": [
-      {
+    "lineBreakOnCharacters": [{
         "char": ".",
         "position": "after",
-        "requireParenthesis": false
-      }
+        "requireParenthesis": false,
+        "beforePattern": "",
+        "afterPattern": ""
+    }
     ],
     "spaces": {
-      "insideParentheses": false,
-      "insideBrackets": false,
-      "insideBraces": true,
-      "beforeParentheses": false
-    },
+        "insideParentheses": false,
+        "insideBrackets": false,
+        "insideBraces": true,
+        "beforeParentheses": false },
     "commentAndStringRules": {
-      "lineComment": "//",
-      "blockCommentStart": "/*",
-      "blockCommentEnd": "*/",
-      "stringDelimiters": [
-        "\"",
+        "lineComment": "//",
+        "blockCommentStart": "/*",
+        "blockCommentEnd": "*/",
+        "stringDelimiters": ["\"",
         "`"
-      ]
-    },
-    "customRules": []
-  }
+        ] },
+    "customRules": [],
+    "completeLinePatterns": [] }, {
+    "fileExtensions": ["json"
+    ],
+    "indentSize": 4,
+    "continuationIndentSize": 0,
+    "bracesStyle": "sameLine",
+    "breakBraceBlocks": true,
+    "indentOnly": false,
+    "forceReformat": true,
+    "keepBlankLines": true,
+    "lineBreakOnCharacters": [{
+        "char": ",",
+        "position": "after",
+        "requireParenthesis": false,
+        "beforePattern": "",
+        "afterPattern": ""
+    }
+    ],
+    "spaces": {
+        "insideParentheses": false,
+        "insideBrackets": false,
+        "insideBraces": true,
+        "beforeParentheses": false },
+    "commentAndStringRules": {
+        "lineComment": "",
+        "blockCommentStart": "",
+        "blockCommentEnd": "",
+        "stringDelimiters": ["\""
+        ] },
+    "customRules": [],
+    "completeLinePatterns": [] }
 ]

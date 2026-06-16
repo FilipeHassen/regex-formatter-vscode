@@ -616,7 +616,8 @@ export class RegexFormatter {
       // If the line starts with a string segment (e.g. multi-line string continuation) or is a block comment continuation line,
       // do NOT modify its indentation or whitespace.
       const firstSeg = lineSegments[0];
-      const isStringContinuation = firstSeg && firstSeg.type === 'string';
+      const startsWithStringDelimiter = firstSeg && firstSeg.type === 'string' && stringDelims.some(delim => firstSeg.text.trimStart().startsWith(delim));
+      const isStringContinuation = firstSeg && firstSeg.type === 'string' && !startsWithStringDelimiter;
       const isCommentContinuation = 
         firstSeg && 
         firstSeg.type === 'comment' && 

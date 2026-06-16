@@ -3,7 +3,21 @@
   "displayName": "Regex Formatter",
   "description": "Formatador e identador genérico simples baseado em regras de Expressão Regular e JSON.",
   "version": "0.0.1",
-  "publisher": "antigravity",
+  "publisher": "filipehassen",
+  "author": {
+    "name": "Filipe Hassen",
+    "email": "filipe.hassen@gmail.com"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FilipeHassen/regex-formatter-vscode.git"
+  },
+  "homepage": "https://github.com/FilipeHassen/regex-formatter-vscode#readme",
+  "bugs": {
+    "url": "https://github.com/FilipeHassen/regex-formatter-vscode/issues"
+  },
+  "icon": "images/icon.png",
   "engines": {
     "vscode": "^1.74.0"
   },

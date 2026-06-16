@@ -2,7 +2,7 @@
   "name": "regex-formatter",
   "displayName": "Regex Formatter",
   "description": "Formatador e identador genérico simples baseado em regras de Expressão Regular e JSON.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "filipehassen",
   "author": {
     "name": "Filipe Hassen",
